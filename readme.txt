@@ -1,98 +1,105 @@
-=== Twenty Twenty ===
-Contributors: the WordPress team
-Tested up to: 5.3
-Stable tag: 1.1
-License: GPLv2 or later
+I.Theme
+
+Sydney, Copyright 2015
+Sydney is licensed under GNU General Public License V2 or later. You can find a copy of it in the license.txt file.
+
+II. Resources
+
+a) Underscores
+Solon is based on Underscores. All the files in the theme package are from Underscores, unless stated otherwise.
+Resource URI: http://underscores.me/
+Copyright: Automattic, automattic.com
+License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Default theme for 2020.
+b) Bootstrap
+All files from the /bootstrap folder are from the Bootstrap v3.1.1 package.
+Resource URI: http://getbootstrap.com/
+Copyright: 2011-2014 Twitter, Inc
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-== Description ==
+c) Icons
+The icon set used in Sydney is FontAwesome.
+Copyright: Dave Gandy
+Resource URI: http://fontawesome.io
+License: SIL Open Font License, Version 1.1
+License URI: https://scripts.sil.org/OFL?
 
-Our default theme for 2020 is designed to take full advantage of the 
-flexibility of the block editor. Organizations and businesses have the 
-ability to create dynamic landing pages with endless layouts using the 
-group and column blocks. The centered content column and fine-tuned 
-typography also makes it perfect for traditional blogs. Complete editor 
-styles give you a good idea of what your content will look like, even 
-before you publish. You can give your site a personal touch by changing 
-the background colors and the accent color in the Customizer. The colors of 
-all elements on your site are automatically calculated based on the colors 
-you pick, ensuring a high, accessible color contrast for your visitors.
+d) FitVids
+Copyright: Chris Coyier, Paravel
+Resource URI: http://fitvidsjs.com/
+License: WTFPL
+License URI: http://www.wtfpl.net/txt/copying/
 
-== Changelog ==
+e) jQuery Waypoints
+Copyright: 2011-2014 Caleb Troughton
+Resource URI: http://imakewebthings.com/jquery-waypoints/
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-= 1.1 =
-* Released: December 12, 2019
+f) imagesLoaded
+Copyright: 2014 David DeSandro
+Resource URI: http://imagesloaded.desandro.com/
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-https://wordpress.org/support/article/twenty-twenty-changelog/
+g) Superslides
+Copyright: Nic Aitch
+Resource URI: https://github.com/nicinabox/superslides
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-= 1.0 =
-* Released: November 12, 2019
+h) OwlCarousel
+Copyright: 2013 Bartosz Wojciechowski
+Resource URI: http://www.owlgraphic.com/owlcarousel/
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-Initial release
-
-== Copyright ==
-
-Twenty Twenty WordPress Theme, Copyright 2019 WordPress.org
-Twenty Twenty is distributed under the terms of the GNU GPL.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-Twenty Twenty is derived from the Chaplin Theme, Copyright 2019 Anders Norén
-Chaplin Theme is distributed under the terms of the GNU GPL version 2.0
-
-Twenty Twenty bundles the following third-party resources:
-
-Illustrations in screenshot.png by Tammie Lister
-License: Creative Commons Zero (CC0), https://creativecommons.org/publicdomain/zero/1.0/  
-
-Inter Font
-Copyright (c) 2016-2019 The Inter Project Authors (me@rsms.me)
-License: SIL Open Font License, 1.1, https://opensource.org/licenses/OFL-1.1
-Source: https://rsms.me/inter/
-
-Bespoke Icons Created For Twenty Twenty
-License: Creative Commons Zero (CC0), https://creativecommons.org/publicdomain/zero/1.0/
-List of bespoke icons:
-- Search icon
-- Menu icon
-
-Feather Icons
-Copyright (c) 2013-2017 Cole Bemis
-License: MIT License, https://opensource.org/licenses/MIT
-Source: https://feathericons.com
-Used for post meta icons, and the link icon in the social menu.
-
-Social Icons
-License: GNU General Public License v2 or later
+i) Flexslider
+Copyright: 2013 WooThemes
+Resource URI: http://www.woothemes.com/flexslider/
+License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Source: WordPress Social Link Block (See wp-includes\blocks\social-link.php)
 
-Code from Twenty Nineteen
-Copyright (c) 2018-2019 WordPress.org
-License: GPLv2
-Source: https://wordpress.org/themes/twentynineteen/
-Included as part of the following classes and functions:
-- TwentyTwenty_SVG_Icons
-- twentytwenty_the_theme_svg()
-- twentytwenty_get_theme_svg()
-- twentytwenty_nav_menu_social_icons()
+j) jQuery CountTo
+Copyright: Matt Huggins
+Resource URI: https://github.com/mhuggins/jquery-countTo
+License: MIT
+License URI: http://opensource.org/licenses/MIT
 
-Code from Twenty Seventeen
-Copyright (c) 2016-2019 WordPress.org
-License: GPLv2
-Source: https://wordpress.org/themes/twentyseventeen/
-Included as part of the following classes and functions:
-- twentytwenty_unique_id()
+k) jQuery Parallax
+Copyright: Ian Lunn
+Resource URI: http://www.ianlunn.co.uk/plugins/jquery-parallax/
+License: MIT/GPL
+License URI: http://opensource.org/licenses/MIT
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Underscores 
-https://underscores.me/, (C) 2012-2019 Automattic, Inc., [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
+l) Isotope
+Copyright: Metafizzy
+Resource URI: http://isotope.metafizzy.co
+License: MIT/GPL
+License URI: http://opensource.org/licenses/MIT
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
+
+m) Images folder
+m1) Image 1 (also used in screenshot)
+Copyright: FirmBee
+Resource URI: http://pixabay.com/en/office-tax-business-finance-620822/
+License: CC0 1.0
+License URI: http://creativecommons.org/publicdomain/zero/1.0/deed.en
+m2) Image 2
+Copyright: FirmBee
+Resource URI: http://pixabay.com/en/smartphone-photo-phone-mobile-623722/
+License: CC0 1.0
+License URI: http://creativecommons.org/publicdomain/zero/1.0/deed.en
+m3) Image 3
+Copyright: StartupStockPhotos
+Resource URI: http://pixabay.com/en/entrepreneur-startup-start-up-man-593358/
+License: CC0 1.0
+License URI: http://creativecommons.org/publicdomain/zero/1.0/deed.en
+
+
+III. Documentation
+
+Theme documentation is available on http://athemes.com/documentation/sydney/

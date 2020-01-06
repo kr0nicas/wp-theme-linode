@@ -2,789 +2,301 @@
 /**
  * Custom template tags for this theme.
  *
- * @package WordPress
- * @subpackage Twenty_Twenty
- * @since 1.0.0
- */
-
-/**
- * Table of Contents:
- * Logo & Description
- * Comments
- * Post Meta
- * Menus
- * Classes
- * Archives
- * Miscellaneous
- */
-
-/**
- * Logo & Description
- */
-/**
- * Displays the site logo, either text or image.
+ * Eventually, some of the functionality here could be replaced by core features.
  *
- * @param array   $args Arguments for displaying the site logo either as an image or text.
- * @param boolean $echo Echo or return the HTML.
- *
- * @return string $html Compiled HTML based on our arguments.
+ * @package Sydney
  */
-function twentytwenty_site_logo( $args = array(), $echo = true ) {
-	$logo       = get_custom_logo();
-	$site_title = get_bloginfo( 'name' );
-	$contents   = '';
-	$classname  = '';
 
-	$defaults = array(
-		'logo'        => '%1$s<span class="screen-reader-text">%2$s</span>',
-		'logo_class'  => 'site-logo',
-		'title'       => '<a href="%1$s">%2$s</a>',
-		'title_class' => 'site-title',
-		'home_wrap'   => '<h1 class="%1$s">%2$s</h1>',
-		'single_wrap' => '<div class="%1$s faux-heading">%2$s</div>',
-		'condition'   => ( is_front_page() || is_home() ) && ! is_page(),
-	);
-
-	$args = wp_parse_args( $args, $defaults );
-
-	/**
-	 * Filters the arguments for `twentytwenty_site_logo()`.
-	 *
-	 * @param array  $args     Parsed arguments.
-	 * @param array  $defaults Function's default arguments.
-	 */
-	$args = apply_filters( 'twentytwenty_site_logo_args', $args, $defaults );
-
-	if ( has_custom_logo() ) {
-		$contents  = sprintf( $args['logo'], $logo, esc_html( $site_title ) );
-		$classname = $args['logo_class'];
-	} else {
-		$contents  = sprintf( $args['title'], esc_url( get_home_url( null, '/' ) ), esc_html( $site_title ) );
-		$classname = $args['title_class'];
-	}
-
-	$wrap = $args['condition'] ? 'home_wrap' : 'single_wrap';
-
-	$html = sprintf( $args[ $wrap ], $classname, $contents );
-
-	/**
-	 * Filters the arguments for `twentytwenty_site_logo()`.
-	 *
-	 * @param string $html      Compiled html based on our arguments.
-	 * @param array  $args      Parsed arguments.
-	 * @param string $classname Class name based on current view, home or single.
-	 * @param string $contents  HTML for site title or logo.
-	 */
-	$html = apply_filters( 'twentytwenty_site_logo', $html, $args, $classname, $contents );
-
-	if ( ! $echo ) {
-		return $html;
-	}
-
-	echo $html; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
-}
-
+if ( ! function_exists( 'the_posts_navigation' ) ) :
 /**
- * Displays the site description.
+ * Display navigation to next/previous set of posts when applicable.
  *
- * @param boolean $echo Echo or return the html.
- *
- * @return string $html The HTML to display.
+ * @todo Remove this function when WordPress 4.3 is released.
  */
-function twentytwenty_site_description( $echo = true ) {
-	$description = get_bloginfo( 'description' );
-
-	if ( ! $description ) {
+function the_posts_navigation() {
+	// Don't print empty markup if there's only one page.
+	if ( $GLOBALS['wp_query']->max_num_pages < 2 ) {
 		return;
 	}
+	?>
+	<nav class="navigation posts-navigation" role="navigation">
+		<h2 class="screen-reader-text"><?php _e( 'Posts navigation', 'sydney' ); ?></h2>
+		<div class="nav-links clearfix">
 
-	$wrapper = '<div class="site-description">%s</div><!-- .site-description -->';
+			<?php if ( get_next_posts_link() ) : ?>
+			<div class="nav-previous"><?php next_posts_link( __( 'Older posts', 'sydney' ) ); ?></div>
+			<?php endif; ?>
 
-	$html = sprintf( $wrapper, esc_html( $description ) );
+			<?php if ( get_previous_posts_link() ) : ?>
+			<div class="nav-next"><?php previous_posts_link( __( 'Newer posts', 'sydney' ) ); ?></div>
+			<?php endif; ?>
 
-	/**
-	 * Filters the html for the site description.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $html         The HTML to display.
-	 * @param string $description  Site description via `bloginfo()`.
-	 * @param string $wrapper      The format used in case you want to reuse it in a `sprintf()`.
-	 */
-	$html = apply_filters( 'twentytwenty_site_description', $html, $description, $wrapper );
+		</div><!-- .nav-links -->
+	</nav><!-- .navigation -->
+	<?php
+}
+endif;
 
-	if ( ! $echo ) {
-		return $html;
+if ( ! function_exists( 'sydney_post_navigation' ) ) :
+function sydney_post_navigation() {
+	// Don't print empty markup if there's nowhere to navigate.
+	$previous = ( is_attachment() ) ? get_post( get_post()->post_parent ) : get_adjacent_post( false, '', true );
+	$next     = get_adjacent_post( false, '', false );
+
+	if ( ! $next && ! $previous ) {
+		return;
+	}
+	?>
+	<nav class="navigation post-navigation" role="navigation">
+		<h2 class="screen-reader-text"><?php _e( 'Post navigation', 'sydney' ); ?></h2>
+		<div class="nav-links clearfix">
+			<?php
+				previous_post_link( '<div class="nav-previous"><span>&#10229;</span>%link</div>', '%title' );
+				next_post_link( '<div class="nav-next">%link<span>&#10230;</span></div>', '%title' );
+			?>
+		</div><!-- .nav-links -->
+	</nav><!-- .navigation -->
+	<?php
+}
+endif;
+
+if ( ! function_exists( 'sydney_posted_on' ) ) :
+/**
+ * Prints HTML with meta information for the current post-date/time and author.
+ */
+function sydney_posted_on() {
+	$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
+	if ( get_the_time( 'U' ) !== get_the_modified_time( 'U' ) ) {
+		$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
 	}
 
-	echo $html; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	$time_string = sprintf( $time_string,
+		esc_attr( get_the_date( 'c' ) ),
+		esc_html( get_the_date() ),
+		esc_attr( get_the_modified_date( 'c' ) ),
+		esc_html( get_the_modified_date() )
+	);
+
+	$posted_on = sprintf(
+		_x( 'Posted %s', 'post date', 'sydney' ),
+		'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
+	);
+
+	$byline = sprintf(
+		_x( '%s', 'post author', 'sydney' ),
+		'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>'
+	);
+
+	echo '<span class="posted-on">' . $posted_on . '</span><span class="byline"> ' . $byline . '</span>';
+	
+	if ( ! is_single() && ! post_password_required() && ( comments_open() || get_comments_number() ) ) {
+		echo '<span class="comments-link">';
+		comments_popup_link( __( 'Leave a comment', 'sydney' ), __( '1 Comment', 'sydney' ), __( '% Comments', 'sydney' ) );
+		echo '</span>';
+	}
+
+	$categories_list = get_the_category_list( __( ', ', 'sydney' ) );
+	if ( !is_single() && $categories_list && sydney_categorized_blog() ) {
+		printf( '<span class="cat-links">' . __( 'Posted in %1$s', 'sydney' ) . '</span>', $categories_list );
+	}
 }
+endif;
+
+if ( ! function_exists( 'sydney_entry_footer' ) ) :
+/**
+ * Prints HTML with meta information for the categories, tags and comments.
+ */
+function sydney_entry_footer() {
+	// Hide category and tag text for pages.
+	if ( 'post' == get_post_type() ) {
+		/* translators: used between list items, there is a space after the comma */
+		$tags_list = get_the_tag_list( '', __( '', 'sydney' ) );
+		if ( $tags_list && is_single() ) {
+			printf( '<span class="tags-links">' . __( ' %1$s', 'sydney' ) . '</span>', $tags_list );
+		}
+	}
+	edit_post_link( __( 'Edit', 'sydney' ), '<span class="edit-link">', '</span>' );
+}
+endif;
+
+if ( ! function_exists( 'the_archive_title' ) ) :
+/**
+ * Shim for `the_archive_title()`.
+ *
+ * Display the archive title based on the queried object.
+ *
+ * @todo Remove this function when WordPress 4.3 is released.
+ *
+ * @param string $before Optional. Content to prepend to the title. Default empty.
+ * @param string $after  Optional. Content to append to the title. Default empty.
+ */
+function the_archive_title( $before = '', $after = '' ) {
+	if ( is_category() ) {
+		$title = sprintf( __( 'Category: %s', 'sydney' ), single_cat_title( '', false ) );
+	} elseif ( is_tag() ) {
+		$title = sprintf( __( 'Tag: %s', 'sydney' ), single_tag_title( '', false ) );
+	} elseif ( is_author() ) {
+		$title = sprintf( __( 'Author: %s', 'sydney' ), '<span class="vcard">' . get_the_author() . '</span>' );
+	} elseif ( is_year() ) {
+		$title = sprintf( __( 'Year: %s', 'sydney' ), get_the_date( _x( 'Y', 'yearly archives date format', 'sydney' ) ) );
+	} elseif ( is_month() ) {
+		$title = sprintf( __( 'Month: %s', 'sydney' ), get_the_date( _x( 'F Y', 'monthly archives date format', 'sydney' ) ) );
+	} elseif ( is_day() ) {
+		$title = sprintf( __( 'Day: %s', 'sydney' ), get_the_date( _x( 'F j, Y', 'daily archives date format', 'sydney' ) ) );
+	} elseif ( is_tax( 'post_format' ) ) {
+		if ( is_tax( 'post_format', 'post-format-aside' ) ) {
+			$title = _x( 'Asides', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-gallery' ) ) {
+			$title = _x( 'Galleries', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-image' ) ) {
+			$title = _x( 'Images', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-video' ) ) {
+			$title = _x( 'Videos', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-quote' ) ) {
+			$title = _x( 'Quotes', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-link' ) ) {
+			$title = _x( 'Links', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-status' ) ) {
+			$title = _x( 'Statuses', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-audio' ) ) {
+			$title = _x( 'Audio', 'post format archive title', 'sydney' );
+		} elseif ( is_tax( 'post_format', 'post-format-chat' ) ) {
+			$title = _x( 'Chats', 'post format archive title', 'sydney' );
+		}
+	} elseif ( is_post_type_archive() ) {
+		$title = sprintf( __( 'Archives: %s', 'sydney' ), post_type_archive_title( '', false ) );
+	} elseif ( is_tax() ) {
+		$tax = get_taxonomy( get_queried_object()->taxonomy );
+		/* translators: 1: Taxonomy singular name, 2: Current taxonomy term */
+		$title = sprintf( __( '%1$s: %2$s', 'sydney' ), $tax->labels->singular_name, single_term_title( '', false ) );
+	} else {
+		$title = __( 'Archives', 'sydney' );
+	}
+
+	/**
+	 * Filter the archive title.
+	 *
+	 * @param string $title Archive title to be displayed.
+	 */
+	$title = apply_filters( 'get_the_archive_title', $title );
+
+	if ( ! empty( $title ) ) {
+		echo $before . $title . $after;
+	}
+}
+endif;
+
+if ( ! function_exists( 'the_archive_description' ) ) :
+/**
+ * Shim for `the_archive_description()`.
+ *
+ * Display category, tag, or term description.
+ *
+ * @todo Remove this function when WordPress 4.3 is released.
+ *
+ * @param string $before Optional. Content to prepend to the description. Default empty.
+ * @param string $after  Optional. Content to append to the description. Default empty.
+ */
+function the_archive_description( $before = '', $after = '' ) {
+	$description = apply_filters( 'get_the_archive_description', term_description() );
+
+	if ( ! empty( $description ) ) {
+		/**
+		 * Filter the archive description.
+		 *
+		 * @see term_description()
+		 *
+		 * @param string $description Archive description to be displayed.
+		 */
+		echo $before . $description . $after;
+	}
+}
+endif;
 
 /**
- * Comments
- */
-/**
- * Check if the specified comment is written by the author of the post commented on.
- *
- * @param object $comment Comment data.
+ * Returns true if a blog has more than 1 category.
  *
  * @return bool
  */
-function twentytwenty_is_comment_by_post_author( $comment = null ) {
+function sydney_categorized_blog() {
+	if ( false === ( $all_the_cool_cats = get_transient( 'sydney_categories' ) ) ) {
+		// Create an array of all the categories that are attached to posts.
+		$all_the_cool_cats = get_categories( array(
+			'fields'     => 'ids',
+			'hide_empty' => 1,
 
-	if ( is_object( $comment ) && $comment->user_id > 0 ) {
+			// We only need to know if there is more than one category.
+			'number'     => 2,
+		) );
 
-		$user = get_userdata( $comment->user_id );
-		$post = get_post( $comment->comment_post_ID );
+		// Count the number of categories that are attached to the posts.
+		$all_the_cool_cats = count( $all_the_cool_cats );
 
-		if ( ! empty( $user ) && ! empty( $post ) ) {
-
-			return $comment->user_id === $post->post_author;
-
-		}
-	}
-	return false;
-
-}
-
-/**
- * Filter comment reply link to not JS scroll.
- * Filter the comment reply link to add a class indicating it should not use JS slow-scroll, as it
- * makes it scroll to the wrong position on the page.
- *
- * @param string $link Link to the top of the page.
- *
- * @return string $link Link to the top of the page.
- */
-function twentytwenty_filter_comment_reply_link( $link ) {
-
-	$link = str_replace( 'class=\'', 'class=\'do-not-scroll ', $link );
-	return $link;
-
-}
-
-add_filter( 'comment_reply_link', 'twentytwenty_filter_comment_reply_link' );
-
-/**
- * Post Meta
- */
-/**
- * Get and Output Post Meta.
- * If it's a single post, output the post meta values specified in the Customizer settings.
- *
- * @param int    $post_id The ID of the post for which the post meta should be output.
- * @param string $location Which post meta location to output – single or preview.
- */
-function twentytwenty_the_post_meta( $post_id = null, $location = 'single-top' ) {
-
-	echo twentytwenty_get_post_meta( $post_id, $location ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped in twentytwenty_get_post_meta().
-
-}
-
-/**
- * Filters the edit post link to add an icon and use the post meta structure.
- *
- * @param string $link    Anchor tag for the edit link.
- * @param int    $post_id Post ID.
- * @param string $text    Anchor text.
- */
-function twentytwenty_edit_post_link( $link, $post_id, $text ) {
-	if ( is_admin() ) {
-		return $link;
+		set_transient( 'sydney_categories', $all_the_cool_cats );
 	}
 
-	$edit_url = get_edit_post_link( $post_id );
+	if ( $all_the_cool_cats > 1 ) {
+		// This blog has more than 1 category so sydney_categorized_blog should return true.
+		return true;
+	} else {
+		// This blog has only 1 category so sydney_categorized_blog should return false.
+		return false;
+	}
+}
 
-	if ( ! $edit_url ) {
+/**
+ * Flush out the transients used in sydney_categorized_blog.
+ */
+function sydney_category_transient_flusher() {
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 		return;
 	}
+	// Like, beat it. Dig?
+	delete_transient( 'sydney_categories' );
+}
+add_action( 'edit_category', 'sydney_category_transient_flusher' );
+add_action( 'save_post',     'sydney_category_transient_flusher' );
 
-	$text = sprintf(
-		wp_kses(
-			/* translators: %s: Post title. Only visible to screen readers. */
-			__( 'Edit <span class="screen-reader-text">%s</span>', 'twentytwenty' ),
-			array(
-				'span' => array(
-					'class' => array(),
-				),
-			)
-		),
-		get_the_title( $post_id )
+/**
+ * Post date
+ */
+function sydney_post_date() {
+	$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
+	if ( get_the_time( 'U' ) !== get_the_modified_time( 'U' ) ) {
+		$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
+	}
+	$time_string = sprintf( $time_string,
+		esc_attr( get_the_date( 'c' ) ),
+		esc_html( get_the_date() ),
+		esc_attr( get_the_modified_date( 'c' ) ),
+		esc_html( get_the_modified_date() )
 	);
-
-	return '<div class="post-meta-wrapper post-meta-edit-link-wrapper"><ul class="post-meta"><li class="post-edit meta-wrapper"><span class="meta-icon">' . twentytwenty_get_theme_svg( 'edit' ) . '</span><span class="meta-text"><a href="' . esc_url( $edit_url ) . '">' . $text . '</a></span></li></ul><!-- .post-meta --></div><!-- .post-meta-wrapper -->';
-
-}
-
-add_filter( 'edit_post_link', 'twentytwenty_edit_post_link', 10, 3 );
-
-/**
- * Get the post meta.
- *
- * @param int    $post_id The ID of the post.
- * @param string $location The location where the meta is shown.
- */
-function twentytwenty_get_post_meta( $post_id = null, $location = 'single-top' ) {
-
-	// Require post ID.
-	if ( ! $post_id ) {
-		return;
-	}
-
-	/**
-	 * Filters post types array
-	 *
-	 * This filter can be used to hide post meta information of post, page or custom post type registerd by child themes or plugins
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array Array of post types
-	 */
-	$disallowed_post_types = apply_filters( 'twentytwenty_disallowed_post_types_for_meta_output', array( 'page' ) );
-	// Check whether the post type is allowed to output post meta.
-	if ( in_array( get_post_type( $post_id ), $disallowed_post_types, true ) ) {
-		return;
-	}
-
-	$post_meta_wrapper_classes = '';
-	$post_meta_classes         = '';
-
-	// Get the post meta settings for the location specified.
-	if ( 'single-top' === $location ) {
-		/**
-		* Filters post meta info visibility
-		*
-		* Use this filter to hide post meta information like Author, Post date, Comments, Is sticky status
-		*
-		* @since 1.0.0
-		*
-		* @param array $args {
-		*  @type string 'author'
-		*  @type string 'post-date'
-		*  @type string 'comments'
-		*  @type string 'sticky'
-		* }
-		*/
-		$post_meta = apply_filters(
-			'twentytwenty_post_meta_location_single_top',
-			array(
-				'author',
-				'post-date',
-				'comments',
-				'sticky',
-			)
-		);
-
-		$post_meta_wrapper_classes = ' post-meta-single post-meta-single-top';
-
-	} elseif ( 'single-bottom' === $location ) {
-
-		/**
-		* Filters post tags visibility
-		*
-		* Use this filter to hide post tags
-		*
-		* @since 1.0.0
-		*
-		* @param array $args {
-		*   @type string 'tags'
-		* }
-		*/
-		$post_meta = apply_filters(
-			'twentytwenty_post_meta_location_single_bottom',
-			array(
-				'tags',
-			)
-		);
-
-		$post_meta_wrapper_classes = ' post-meta-single post-meta-single-bottom';
-
-	}
-
-	// If the post meta setting has the value 'empty', it's explicitly empty and the default post meta shouldn't be output.
-	if ( $post_meta && ! in_array( 'empty', $post_meta, true ) ) {
-
-		// Make sure we don't output an empty container.
-		$has_meta = false;
-
-		global $post;
-		$the_post = get_post( $post_id );
-		setup_postdata( $the_post );
-
-		ob_start();
-
-		?>
-
-		<div class="post-meta-wrapper<?php echo esc_attr( $post_meta_wrapper_classes ); ?>">
-
-			<ul class="post-meta<?php echo esc_attr( $post_meta_classes ); ?>">
-
-				<?php
-
-				/**
-				 * Fires before post meta html display.
-				 *
-				 * Allow output of additional post meta info to be added by child themes and plugins.
-				 *
-				 * @since 1.0.0
-				 * @since Twenty Twenty 1.1 Added the `$post_meta` and `$location` parameters.
-				 *
-				 * @param int    $post_id   Post ID.
-				 * @param array  $post_meta An array of post meta information.
-				 * @param string $location  The location where the meta is shown.
-				 *                          Accepts 'single-top' or 'single-bottom'.
-				 */
-				do_action( 'twentytwenty_start_of_post_meta_list', $post_id, $post_meta, $location );
-
-				// Author.
-				if ( in_array( 'author', $post_meta, true ) ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-author meta-wrapper">
-						<span class="meta-icon">
-							<span class="screen-reader-text"><?php _e( 'Post author', 'twentytwenty' ); ?></span>
-							<?php twentytwenty_the_theme_svg( 'user' ); ?>
-						</span>
-						<span class="meta-text">
-							<?php
-							printf(
-								/* translators: %s: Author name */
-								__( 'By %s', 'twentytwenty' ),
-								'<a href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author_meta( 'display_name' ) ) . '</a>'
-							);
-							?>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				// Post date.
-				if ( in_array( 'post-date', $post_meta, true ) ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-date meta-wrapper">
-						<span class="meta-icon">
-							<span class="screen-reader-text"><?php _e( 'Post date', 'twentytwenty' ); ?></span>
-							<?php twentytwenty_the_theme_svg( 'calendar' ); ?>
-						</span>
-						<span class="meta-text">
-							<a href="<?php the_permalink(); ?>"><?php the_time( get_option( 'date_format' ) ); ?></a>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				// Categories.
-				if ( in_array( 'categories', $post_meta, true ) && has_category() ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-categories meta-wrapper">
-						<span class="meta-icon">
-							<span class="screen-reader-text"><?php _e( 'Categories', 'twentytwenty' ); ?></span>
-							<?php twentytwenty_the_theme_svg( 'folder' ); ?>
-						</span>
-						<span class="meta-text">
-							<?php _ex( 'In', 'A string that is output before one or more categories', 'twentytwenty' ); ?> <?php the_category( ', ' ); ?>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				// Tags.
-				if ( in_array( 'tags', $post_meta, true ) && has_tag() ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-tags meta-wrapper">
-						<span class="meta-icon">
-							<span class="screen-reader-text"><?php _e( 'Tags', 'twentytwenty' ); ?></span>
-							<?php twentytwenty_the_theme_svg( 'tag' ); ?>
-						</span>
-						<span class="meta-text">
-							<?php the_tags( '', ', ', '' ); ?>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				// Comments link.
-				if ( in_array( 'comments', $post_meta, true ) && ! post_password_required() && ( comments_open() || get_comments_number() ) ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-comment-link meta-wrapper">
-						<span class="meta-icon">
-							<?php twentytwenty_the_theme_svg( 'comment' ); ?>
-						</span>
-						<span class="meta-text">
-							<?php comments_popup_link(); ?>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				// Sticky.
-				if ( in_array( 'sticky', $post_meta, true ) && is_sticky() ) {
-
-					$has_meta = true;
-					?>
-					<li class="post-sticky meta-wrapper">
-						<span class="meta-icon">
-							<?php twentytwenty_the_theme_svg( 'bookmark' ); ?>
-						</span>
-						<span class="meta-text">
-							<?php _e( 'Sticky post', 'twentytwenty' ); ?>
-						</span>
-					</li>
-					<?php
-
-				}
-
-				/**
-				 * Fires after post meta html display.
-				 *
-				 * Allow output of additional post meta info to be added by child themes and plugins.
-				 *
-				 * @since 1.0.0
-				 * @since Twenty Twenty 1.1 Added the `$post_meta` and `$location` parameters.
-				 *
-				 * @param int    $post_id   Post ID.
-				 * @param array  $post_meta An array of post meta information.
-				 * @param string $location  The location where the meta is shown.
-				 *                          Accepts 'single-top' or 'single-bottom'.
-				 */
-				do_action( 'twentytwenty_end_of_post_meta_list', $post_id, $post_meta, $location );
-
-				?>
-
-			</ul><!-- .post-meta -->
-
-		</div><!-- .post-meta-wrapper -->
-
-		<?php
-
-		wp_reset_postdata();
-
-		$meta_output = ob_get_clean();
-
-		// If there is meta to output, return it.
-		if ( $has_meta && $meta_output ) {
-
-			return $meta_output;
-
-		}
-	}
-
-}
-
-/**
- * Menus
- */
-/**
- * Filter Classes of wp_list_pages items to match menu items.
- * Filter the class applied to wp_list_pages() items with children to match the menu class, to simplify.
- * styling of sub levels in the fallback. Only applied if the match_menu_classes argument is set.
- *
- * @param array  $css_class CSS Class names.
- * @param string $item Comment.
- * @param int    $depth Depth of the current comment.
- * @param array  $args An array of arguments.
- * @param string $current_page Whether or not the item is the current item.
- *
- * @return array $css_class CSS Class names.
- */
-function twentytwenty_filter_wp_list_pages_item_classes( $css_class, $item, $depth, $args, $current_page ) {
-
-	// Only apply to wp_list_pages() calls with match_menu_classes set to true.
-	$match_menu_classes = isset( $args['match_menu_classes'] );
-
-	if ( ! $match_menu_classes ) {
-		return $css_class;
-	}
-
-	// Add current menu item class.
-	if ( in_array( 'current_page_item', $css_class, true ) ) {
-		$css_class[] = 'current-menu-item';
-	}
-
-	// Add menu item has children class.
-	if ( in_array( 'page_item_has_children', $css_class, true ) ) {
-		$css_class[] = 'menu-item-has-children';
-	}
-
-	return $css_class;
-
-}
-
-add_filter( 'page_css_class', 'twentytwenty_filter_wp_list_pages_item_classes', 10, 5 );
-
-/**
- * Add a Sub Nav Toggle to the Expanded Menu and Mobile Menu.
- *
- * @param stdClass $args An array of arguments.
- * @param string   $item Menu item.
- * @param int      $depth Depth of the current menu item.
- *
- * @return stdClass $args An object of wp_nav_menu() arguments.
- */
-function twentytwenty_add_sub_toggles_to_main_menu( $args, $item, $depth ) {
-
-	// Add sub menu toggles to the Expanded Menu with toggles.
-	if ( isset( $args->show_toggles ) && $args->show_toggles ) {
-
-		// Wrap the menu item link contents in a div, used for positioning.
-		$args->before = '<div class="ancestor-wrapper">';
-		$args->after  = '';
-
-		// Add a toggle to items with children.
-		if ( in_array( 'menu-item-has-children', $item->classes, true ) ) {
-
-			$toggle_target_string = '.menu-modal .menu-item-' . $item->ID . ' > .sub-menu';
-			$toggle_duration      = twentytwenty_toggle_duration();
-
-			// Add the sub menu toggle.
-			$args->after .= '<button class="toggle sub-menu-toggle fill-children-current-color" data-toggle-target="' . $toggle_target_string . '" data-toggle-type="slidetoggle" data-toggle-duration="' . absint( $toggle_duration ) . '" aria-expanded="false"><span class="screen-reader-text">' . __( 'Show sub menu', 'twentytwenty' ) . '</span>' . twentytwenty_get_theme_svg( 'chevron-down' ) . '</button>';
-
-		}
-
-		// Close the wrapper.
-		$args->after .= '</div><!-- .ancestor-wrapper -->';
-
-		// Add sub menu icons to the primary menu without toggles.
-	} elseif ( 'primary' === $args->theme_location ) {
-		if ( in_array( 'menu-item-has-children', $item->classes, true ) ) {
-			$args->after = '<span class="icon"></span>';
-		} else {
-			$args->after = '';
-		}
-	}
-
-	return $args;
-
-}
-
-add_filter( 'nav_menu_item_args', 'twentytwenty_add_sub_toggles_to_main_menu', 10, 3 );
-
-/**
- * Display SVG icons in social links menu.
- *
- * @param  string  $item_output The menu item output.
- * @param  WP_Post $item        Menu item object.
- * @param  int     $depth       Depth of the menu.
- * @param  array   $args        wp_nav_menu() arguments.
- * @return string  $item_output The menu item output with social icon.
- */
-function twentytwenty_nav_menu_social_icons( $item_output, $item, $depth, $args ) {
-	// Change SVG icon inside social links menu if there is supported URL.
-	if ( 'social' === $args->theme_location ) {
-		$svg = TwentyTwenty_SVG_Icons::get_social_link_svg( $item->url );
-		if ( empty( $svg ) ) {
-			$svg = twentytwenty_get_theme_svg( 'link' );
-		}
-		$item_output = str_replace( $args->link_after, '</span>' . $svg, $item_output );
-	}
-
-	return $item_output;
-}
-
-add_filter( 'walker_nav_menu_start_el', 'twentytwenty_nav_menu_social_icons', 10, 4 );
-
-/**
- * Classes
- */
-/**
- * Add No-JS Class.
- * If we're missing JavaScript support, the HTML element will have a no-js class.
- */
-function twentytwenty_no_js_class() {
-
-	?>
-	<script>document.documentElement.className = document.documentElement.className.replace( 'no-js', 'js' );</script>
-	<?php
-
-}
-
-add_action( 'wp_head', 'twentytwenty_no_js_class' );
-
-/**
- * Add conditional body classes.
- *
- * @param array $classes Classes added to the body tag.
- *
- * @return array $classes Classes added to the body tag.
- */
-function twentytwenty_body_classes( $classes ) {
-
-	global $post;
-	$post_type = isset( $post ) ? $post->post_type : false;
-
-	// Check whether we're singular.
-	if ( is_singular() ) {
-		$classes[] = 'singular';
-	}
-
-	// Check whether the current page should have an overlay header.
-	if ( is_page_template( array( 'templates/template-cover.php' ) ) ) {
-		$classes[] = 'overlay-header';
-	}
-
-	// Check whether the current page has full-width content.
-	if ( is_page_template( array( 'templates/template-full-width.php' ) ) ) {
-		$classes[] = 'has-full-width-content';
-	}
-
-	// Check for enabled search.
-	if ( true === get_theme_mod( 'enable_header_search', true ) ) {
-		$classes[] = 'enable-search-modal';
-	}
-
-	// Check for post thumbnail.
-	if ( is_singular() && has_post_thumbnail() ) {
-		$classes[] = 'has-post-thumbnail';
-	} elseif ( is_singular() ) {
-		$classes[] = 'missing-post-thumbnail';
-	}
-
-	// Check whether we're in the customizer preview.
-	if ( is_customize_preview() ) {
-		$classes[] = 'customizer-preview';
-	}
-
-	// Check if posts have single pagination.
-	if ( is_single() && ( get_next_post() || get_previous_post() ) ) {
-		$classes[] = 'has-single-pagination';
-	} else {
-		$classes[] = 'has-no-pagination';
-	}
-
-	// Check if we're showing comments.
-	if ( $post && ( ( 'post' === $post_type || comments_open() || get_comments_number() ) && ! post_password_required() ) ) {
-		$classes[] = 'showing-comments';
-	} else {
-		$classes[] = 'not-showing-comments';
-	}
-
-	// Check if avatars are visible.
-	$classes[] = get_option( 'show_avatars' ) ? 'show-avatars' : 'hide-avatars';
-
-	// Slim page template class names (class = name - file suffix).
-	if ( is_page_template() ) {
-		$classes[] = basename( get_page_template_slug(), '.php' );
-	}
-
-	// Check for the elements output in the top part of the footer.
-	$has_footer_menu = has_nav_menu( 'footer' );
-	$has_social_menu = has_nav_menu( 'social' );
-	$has_sidebar_1   = is_active_sidebar( 'sidebar-1' );
-	$has_sidebar_2   = is_active_sidebar( 'sidebar-2' );
-
-	// Add a class indicating whether those elements are output.
-	if ( $has_footer_menu || $has_social_menu || $has_sidebar_1 || $has_sidebar_2 ) {
-		$classes[] = 'footer-top-visible';
-	} else {
-		$classes[] = 'footer-top-hidden';
-	}
-
-	// Get header/footer background color.
-	$header_footer_background = get_theme_mod( 'header_footer_background_color', '#ffffff' );
-	$header_footer_background = strtolower( '#' . ltrim( $header_footer_background, '#' ) );
-
-	// Get content background color.
-	$background_color = get_theme_mod( 'background_color', 'f5efe0' );
-	$background_color = strtolower( '#' . ltrim( $background_color, '#' ) );
-
-	// Add extra class if main background and header/footer background are the same color.
-	if ( $background_color === $header_footer_background ) {
-		$classes[] = 'reduced-spacing';
-	}
-
-	return $classes;
-
-}
-
-add_filter( 'body_class', 'twentytwenty_body_classes' );
-
-/**
- * Archives
- */
-/**
- * Filters the archive title and styles the word before the first colon.
- *
- * @param string $title Current archive title.
- *
- * @return string $title Current archive title.
- */
-function twentytwenty_get_the_archive_title( $title ) {
-
-	$regex = apply_filters(
-		'twentytwenty_get_the_archive_title_regex',
-		array(
-			'pattern'     => '/(\A[^\:]+\:)/',
-			'replacement' => '<span class="color-accent">$1</span>',
-		)
+	$posted_on = sprintf(
+		/* translators: %s: post date. */
+		esc_html_x( 'Posted on %s', 'post date', 'sydney' ),
+		'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
 	);
-
-	if ( empty( $regex ) ) {
-
-		return $title;
-
-	}
-
-	return preg_replace( $regex['pattern'], $regex['replacement'], $title );
-
-}
-
-add_filter( 'get_the_archive_title', 'twentytwenty_get_the_archive_title' );
-
-/**
- * Miscellaneous
- */
-/**
- * Toggle animation duration in milliseconds.
- *
- * @return integer Duration in milliseconds
- */
-function twentytwenty_toggle_duration() {
-	/**
-	 * Filters the animation duration/speed used usually for submenu toggles.
-	 *
-	 * @since 1.0
-	 *
-	 * @param integer $duration Duration in milliseconds.
-	 */
-	$duration = apply_filters( 'twentytwenty_toggle_duration', 250 );
-
-	return $duration;
+	echo '<span class="posted-on">' . $posted_on . '</span>'; // WPCS: XSS OK.
 }
 
 /**
- * Get unique ID.
- *
- * This is a PHP implementation of Underscore's uniqueId method. A static variable
- * contains an integer that is incremented with each call. This number is returned
- * with the optional prefix. As such the returned value is not universally unique,
- * but it is unique across the life of the PHP process.
- *
- * @see wp_unique_id() Themes requiring WordPress 5.0.3 and greater should use this instead.
- *
- * @staticvar int $id_counter
- *
- * @param string $prefix Prefix for the returned ID.
- * @return string Unique ID.
+ * First category
  */
-function twentytwenty_unique_id( $prefix = '' ) {
-	static $id_counter = 0;
-	if ( function_exists( 'wp_unique_id' ) ) {
-		return wp_unique_id( $prefix );
+function sydney_get_first_cat() {
+	if ( 'post' === get_post_type() ) {
+		$cats = get_the_category();
+		echo '<a href="' . esc_url( get_category_link( $cats[0]->term_id ) ) . '" title="' . esc_attr( $cats[0]->name ) . '" class="post-cat">' . esc_html( $cats[0]->name ) . '</a>';
 	}
-	return $prefix . (string) ++$id_counter;
+}
+
+/**
+ * Get all post categories
+ */
+function sydney_all_cats() {
+	$categories = get_the_category();
+	if ( $categories && sydney_categorized_blog() ) {
+		foreach ($categories as $cat) {
+			echo '<a href="' . esc_url( get_category_link( $cat->term_id ) ) . '" title="' . esc_attr( $cat->name ) . '" class="post-cat">' . esc_html( $cat->name ) . '</a>';
+		}
+	}
 }

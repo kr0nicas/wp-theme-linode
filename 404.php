@@ -1,36 +1,29 @@
 <?php
 /**
- * The template for displaying the 404 template in the Twenty Twenty theme.
+ * The template for displaying 404 pages (not found).
  *
- * @package WordPress
- * @subpackage Twenty_Twenty
- * @since 1.0.0
+ * @package Sydney
  */
 
-get_header();
-?>
+get_header(); ?>
 
-<main id="site-content" role="main">
+	<div id="primary" class="content-area fullwidth">
+		<main id="main" class="site-main" role="main">
 
-	<div class="section-inner thin error404-content">
+			<section class="error-404 not-found">
+				<header class="page-header">
+					<h1 class="page-title"><?php _e( 'Oops! That page can&rsquo;t be found.', 'sydney' ); ?></h1>
+				</header><!-- .page-header -->
 
-		<h1 class="entry-title"><?php _e( 'Page Not Found', 'twentytwenty' ); ?></h1>
+				<div class="page-content">
+					<p><?php _e( 'It looks like nothing was found at this location. Maybe try one of the links below or a search?', 'sydney' ); ?></p>
 
-		<div class="intro-text"><p><?php _e( 'The page you were looking for could not be found. It might have been removed, renamed, or did not exist in the first place.', 'twentytwenty' ); ?></p></div>
+					<?php get_search_form(); ?>
 
-		<?php
-		get_search_form(
-			array(
-				'label' => __( '404 not found', 'twentytwenty' ),
-			)
-		);
-		?>
+				</div><!-- .page-content -->
+			</section><!-- .error-404 -->
 
-	</div><!-- .section-inner -->
+		</main><!-- #main -->
+	</div><!-- #primary -->
 
-</main><!-- #site-content -->
-
-<?php get_template_part( 'template-parts/footer-menus-widgets' ); ?>
-
-<?php
-get_footer();
+<?php get_footer(); ?>
